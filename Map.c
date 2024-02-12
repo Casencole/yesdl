@@ -6,17 +6,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-const int SIZE = 10;
+
+const int SIZE = 13;
 const int bgColor[4]= {0, 0, 0, 255};
 const int avtrColor[4]= {0, 59, 111, 255};
 
+/**
+ * allocates memory and reads level from text and set's each tile to the resepctive type
+ * @param map Struct holding a lot of info about the map (amount of gems, rows, cols, avtrRow, avtrCol,
+ *                                                       tile avtrIsOn, and 2d array of all ties)
+ * @param filename file name of the level/map being read in 
+ * @return  true if file is read correctly 
+ *          false if file is not found
+ */
 bool mapInit(Map* map, const char* filename){
-    map->gems = 0;
     FILE* level = fopen(filename,"r");
     if (level == NULL) {
         return false;
     }
+    
     fscanf(level, "%d %d %d %d ", &map->rows, &map->cols, &map->avtrRow, &map->avtrCol);
+    map->gems = 0;
+    
     map -> tile = malloc(sizeof(Tile *) * map->rows);
     for (int i = 0; i < map->rows; i++) {
         map -> tile[i] = malloc(sizeof(Tile ) * map->cols);
@@ -33,36 +44,28 @@ bool mapInit(Map* map, const char* filename){
             switch (currentTile) {
                 case '#':
                     map->tile[i][j].type = wall;
-                    map->tile[i][j].collison = true;
                     break;
                 case '.':
                     map->tile[i][j].type = empty;
-                    map->tile[i][j].collison = false;
                     break;
                 case 'S':
                     map->tile[i][j].type = fake_wall;
-                    map->tile[i][j].collison = false;
                     break;
                 case '*':
                     map->tile[i][j].type = gem;
-                    map->tile[i][j].collison = false;
                     map->gems++;
                     break;
                 case '+':
                     map->tile[i][j].type = key;
-                    map->tile[i][j].collison = false;
                     break;
                 case '-':
                     map->tile[i][j].type = open_door;
-                    map->tile[i][j].collison = false;
                     break;
                 case '=':
                     map->tile[i][j].type = locked_door;
-                    map->tile[i][j].collison = true;
                     break;
                 default:
                     map->tile[i][j].type = invalid_tile;
-                    map->tile[i][j].collison = true;
                     break;
             }
         }
@@ -71,6 +74,12 @@ bool mapInit(Map* map, const char* filename){
     return true;
 }
 
+/**
+ * Deallocates memory to everything and setws all the tiles to NULL
+* @param map Struct holding a lot of info about the map (amount of gems, rows, cols, avtrRow, avtrCol,
+ *                                                       tile avtrIsOn, and 2d array of all ties)
+ * 
+ */
 void mapUninit(Map* map){
     for (int i = 0; i < map->rows; i++) {
         free(map->tile[i]);
@@ -80,6 +89,12 @@ void mapUninit(Map* map){
     map->tile = NULL;
 }
 
+/**
+ * 
+ * @param renderer renders thing
+ * @param map Struct holding a lot of info about the map (amount of gems, rows, cols, avtrRow, avtrCol,
+ *                                                       tile avtrIsOn, and 2d array of all ties)
+ */
 void displayMap(SDL_Renderer* renderer, Map* map){
     //SDL_SetRenderDrawColor(renderer, 69, 69, 69, 69);
     //SDL_RenderClear(renderer);
@@ -94,82 +109,75 @@ void displayMap(SDL_Renderer* renderer, Map* map){
     
 }
 
-void avtrInit(Avtr* avtr){
-    avtr->keys = 0;
-    avtr->gems = 0;
-}
-
-//void avtrUninit(Avtr* avtr){
-//
-//}
-
 /**
- * 
+ * Handles all the movement for the avatar making sure it's in bounds, not a tile w/ collision, unlocking doors etc
+ * @param renderer renders thing
  * @param map The current level the avatar is moving around on
+ * @param avtr Struct holding the amount of keys and gems the player has
  * @param axis Should either be an 'x' or 'y' other inputs are not recognized
  *                  'x' (for moving the avatar in the same row) 
  *                  'y' (for moving the avatar in the same col)
  * @param spaces How many tiles the avatar is moving along said axis
  *                  negative for up or left
  *                  positive for down or right
- * @return 0  everything went correct
- *         -1 hit the outer layer of the map
- *         -2 hit a a tile that has collison
- *         -3 hit a locked_door and have no keys
+ * @return 0 everything went correct
+ *         1 ran into locked_door w/ no keys
+ *        -1 hit the outer layer of the map
+ *        -2 hit a a tile that has collison
+ *        -3 Invalid axis
  */
 int moveAvtr(SDL_Renderer* renderer, Map* map, Avtr* avtr, char axis, int spaces){
+    int newRow = map->avtrRow;
+    int newCol = map->avtrCol;
     
-    //Check to make sure move is in bounds and is not a tile with collsion
-    //Also checks to see if it is a door that can be unlocked
-    if (axis == 'x'){
-        if (map->avtrCol + spaces >= map->cols || map->avtrCol + spaces < 0){
-            return -1; //error of out of bound can't move
-        } else if (map->tile[map->avtrRow][map->avtrCol + spaces].type == locked_door){
-            if (avtr->keys > 0) {
-                map->tile[map->avtrRow][map->avtrCol + spaces].type = open_door;
-                map->tile[map->avtrRow][map->avtrCol + spaces].collison = false;
-                avtr->keys--;
-            } else return -3;
-        } else if (map->tile[map->avtrRow][map->avtrCol + spaces].collison){
-            return -2;
-        }
-    } else if (axis == 'y'){
-        if (map->avtrRow + spaces >= map->rows || map->avtrRow + spaces < 0){
-            return -1; //error of out of bounds can't move
-        } else if (map->tile[map->avtrRow + spaces][map->avtrCol].type == locked_door){
-            if (avtr->keys > 0) {
-                map->tile[map->avtrRow + spaces][map->avtrCol].type = open_door;
-                map->tile[map->avtrRow + spaces][map->avtrCol].collison = false;
-                avtr->keys--;
-            } else return -3;
-        } else if (map->tile[map->avtrRow + spaces][map->avtrCol].collison){
-            return -2;
-        }
+    if (axis == 'x') {
+        newCol += spaces;
+    } else if (axis == 'y') {
+        newRow += spaces;
+    } else return -3; // Invalid axis
+    
+    //Make sure in bounds
+    if (newRow >= map->rows || newRow < 0 || newCol >= map->cols || newCol < 0){
+        return -1;
+    }
+    
+    //Check to see if locked_door and if I have key or if it's a tile with collision
+    Tile* tile = &map->tile[newRow][newCol];
+    if (tile->type == locked_door && avtr->keys > 0){
+        tile->type = open_door;
+        avtr->keys--;
+        displayInvintory(renderer, avtr);
+    } else if (tile->type == locked_door && avtr->keys < 0){
+        return 1;
+    } 
+    if (hasCollision(tile->type)){
+        return -2;
     }
     
     //Redrawing the tile that the player is one or if consumed drawing an empty tile
-    if (isConsumable(map->avtrIsOn, avtr)){
-        drawTile(renderer, empty, map->tile[map->avtrRow][map->avtrCol].rect);
-    }else {
-        drawTile(renderer, map->avtrIsOn, map->tile[map->avtrRow][map->avtrCol].rect);
-    }
-
-    //Setting the new position to the avatar tile
-    if (axis == 'x'){
-        map->avtrIsOn = map->tile[map->avtrRow][map->avtrCol + spaces].type;
-        map->avtrCol += spaces;
-    } else if (axis =='y'){
-        map->avtrIsOn = map->tile[map->avtrRow + spaces][map->avtrCol].type;
-        map->avtrRow += spaces;
-        
-    }
+    tileName newTile = (isConsumable(map->avtrIsOn, avtr, renderer)) ? empty : map->avtrIsOn;
+    map->tile[map->avtrRow][map->avtrCol].type = newTile;
+    drawTile(renderer, newTile, map->tile[map->avtrRow][map->avtrCol].rect);
+    
+    
+    //passed all checks
+    map->avtrIsOn = tile->type;
+    map->avtrRow = newRow;
+    map->avtrCol = newCol;
     
     //Drawing the new position of the avatar
     SDL_SetRenderDrawColor(renderer, avtrColor[0], avtrColor[1], avtrColor[2], avtrColor[3]);
-    SDL_RenderFillRect(renderer, &map->tile[map->avtrRow][map->avtrCol].rect);
+    SDL_RenderFillRect(renderer, &tile->rect);
     return 0;
 }
 
+/**
+ * Holds the instruction for all the diffrent tiles we can draw and what colors they
+ * should be etc etc...
+ * @param renderer renders thing
+ * @param type the type of tile we are going to draw
+ * @param rect the tile/loctation we are drawing at
+ */
 void drawTile(SDL_Renderer* renderer, tileName type, SDL_Rect rect){
     switch (type) {
         case wall:
@@ -211,7 +219,14 @@ void drawTile(SDL_Renderer* renderer, tileName type, SDL_Rect rect){
     }
 }
 
-bool isConsumable(tileName type, Avtr* avtr){
+/**
+ * check to see if the tile is something the player can pick up/consume and if
+ * so increase those items in the player's invintory
+ * @param type diffrent possible tiles
+ * @param avtr Struct holding the amount of keys and gems the player has 
+ * @return if the tile is consumable then returns true false is not
+ */
+bool isConsumable(tileName type, Avtr* avtr, SDL_Renderer* renderer){
     switch (type) {
         case gem:
             //gem ++
@@ -219,6 +234,7 @@ bool isConsumable(tileName type, Avtr* avtr){
             return true;
         case key:
             avtr->keys++;
+            displayInvintory(renderer, avtr);
             return true;
         default://Anything that is not consumable
             return false;
@@ -226,6 +242,36 @@ bool isConsumable(tileName type, Avtr* avtr){
     }
 }
 
+/**
+ * Check to see if a tile has collision to see if the palyer can move there
+ * @param type diffrent possible tiles
+ * @return false is you can walk there true if you can
+ */
+bool hasCollision(tileName type){
+    switch (type) {
+        case empty:
+            return false;
+        case fake_wall:
+            return false;
+        case gem:
+            return false;
+        case key:
+            return false;
+        case open_door:
+            return false;
+        default:// wall, locked_door
+            return true;
+    }
+}
+
+/**
+ * Amount of gems remaining in the map
+ * @param map Struct holding a lot of info about the map (amount of gems, rows, cols, avtrRow, avtrCol,
+ *                                                       tile avtrIsOn, and 2d array of all ties)
+ * @param avtr Struct holding the amount of keys and gems the player has
+ * @return 
+ */
 int gemsRemaining(Map* map, Avtr* avtr){
+    
     return map->gems - avtr->gems;
 }

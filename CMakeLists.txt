@@ -9,6 +9,8 @@ include_directories(${SDL2_INCLUDE_DIR})
 
 add_executable(yesdl main.c
         Map.c
-        Map.h)
+        Map.h
+        Avatar.c
+        Avatar.h)
 
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY})

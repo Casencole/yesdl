@@ -34,6 +34,7 @@ int main(int argc, char** argv) {
     }
     avtrInit(&avtr);
     
+    
     //Main game loop
     while (!quit) {
         //Checks to see if the event is me hitting the close button & if it is it closes the application
@@ -58,8 +59,10 @@ int main(int argc, char** argv) {
                         quit = true;
                         break; 
                 }
-            } 
+            }
+            displayInvintory(render, &avtr);
         }
+        
         SDL_RenderPresent(render);
     }
     mapUninit(&map);
