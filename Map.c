@@ -5,9 +5,9 @@
 #include "Map.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
-const int SIZE = 13;
+
+const int SIZE = 30;
 const int bgColor[4]= {0, 0, 0, 255};
 const int avtrColor[4]= {0, 59, 111, 255};
 
@@ -19,7 +19,7 @@ const int avtrColor[4]= {0, 59, 111, 255};
  * @return  true if file is read correctly 
  *          false if file is not found
  */
-bool mapInit(Map* map, const char* filename){
+bool mapInit(Map* map, const char* filename, int* screenW, int* screenH){
     FILE* level = fopen(filename,"r");
     if (level == NULL) {
         return false;
@@ -28,6 +28,10 @@ bool mapInit(Map* map, const char* filename){
     fscanf(level, "%d %d %d %d ", &map->rows, &map->cols, &map->avtrRow, &map->avtrCol);
     map->gems = 0;
     
+    //set the values of screenW and screenH to the correct things
+    *screenW = map->cols * SIZE + 120;
+    *screenH = map->rows * SIZE;
+    
     map -> tile = malloc(sizeof(Tile *) * map->rows);
     for (int i = 0; i < map->rows; i++) {
         map -> tile[i] = malloc(sizeof(Tile ) * map->cols);
@@ -35,8 +39,8 @@ bool mapInit(Map* map, const char* filename){
             //Every tile should be the same size and placed in this grid order
             map->tile[i][j].rect.h = SIZE;
             map->tile[i][j].rect.w = SIZE;
-            map->tile[i][j].rect.x = 10 + SIZE * j;  //Should move over a column
-            map->tile[i][j].rect.y = 10 + SIZE * i;  //Should go down a row
+            map->tile[i][j].rect.x = 0 + SIZE * j;  //Should move over a column
+            map->tile[i][j].rect.y = 0 + SIZE * i;  //Should go down a row
             
             //Determines what each tile type is going to be
             char currentTile;
@@ -78,7 +82,6 @@ bool mapInit(Map* map, const char* filename){
  * Deallocates memory to everything and setws all the tiles to NULL
 * @param map Struct holding a lot of info about the map (amount of gems, rows, cols, avtrRow, avtrCol,
  *                                                       tile avtrIsOn, and 2d array of all ties)
- * 
  */
 void mapUninit(Map* map){
     for (int i = 0; i < map->rows; i++) {
@@ -87,7 +90,7 @@ void mapUninit(Map* map){
     }
     free(map->tile);
     map->tile = NULL;
-}
+} 
 
 /**
  * 
@@ -95,15 +98,13 @@ void mapUninit(Map* map){
  * @param map Struct holding a lot of info about the map (amount of gems, rows, cols, avtrRow, avtrCol,
  *                                                       tile avtrIsOn, and 2d array of all ties)
  */
-void displayMap(SDL_Renderer* renderer, Map* map){
-    //SDL_SetRenderDrawColor(renderer, 69, 69, 69, 69);
-    //SDL_RenderClear(renderer);
+void displayMap(SDL_Window* win, SDL_Renderer* ren, Map* map){
     for (int i = 0; i < map->rows; i++) {
         for (int j = 0; j < map->cols; ++j) {
-            drawTile(renderer, map->tile[i][j].type, map->tile[i][j].rect);
+                drawTile(ren, map->tile[i][j].type, map->tile[i][j].rect);
             map->avtrIsOn = empty;
-            SDL_SetRenderDrawColor(renderer, avtrColor[0], avtrColor[1], avtrColor[2], avtrColor[3]);
-            SDL_RenderFillRect(renderer, &map->tile[map->avtrRow][map->avtrCol].rect);
+            SDL_SetRenderDrawColor(ren, avtrColor[0], avtrColor[1], avtrColor[2], avtrColor[3]);
+            SDL_RenderFillRect(ren, &map->tile[map->avtrRow][map->avtrCol].rect);
         }
     }
     
@@ -111,7 +112,7 @@ void displayMap(SDL_Renderer* renderer, Map* map){
 
 /**
  * Handles all the movement for the avatar making sure it's in bounds, not a tile w/ collision, unlocking doors etc
- * @param renderer renders thing
+ * @param ren renders thing
  * @param map The current level the avatar is moving around on
  * @param avtr Struct holding the amount of keys and gems the player has
  * @param axis Should either be an 'x' or 'y' other inputs are not recognized
@@ -126,7 +127,7 @@ void displayMap(SDL_Renderer* renderer, Map* map){
  *        -2 hit a a tile that has collison
  *        -3 Invalid axis
  */
-int moveAvtr(SDL_Renderer* renderer, Map* map, Avtr* avtr, char axis, int spaces){
+int moveAvtr(SDL_Renderer* ren, Map* map, Avtr* avtr, char axis, int spaces){
     int newRow = map->avtrRow;
     int newCol = map->avtrCol;
     
@@ -146,75 +147,76 @@ int moveAvtr(SDL_Renderer* renderer, Map* map, Avtr* avtr, char axis, int spaces
     if (tile->type == locked_door && avtr->keys > 0){
         tile->type = open_door;
         avtr->keys--;
-        displayInvintory(renderer, avtr);
+        displayInvintory(ren, avtr);
     } else if (tile->type == locked_door && avtr->keys < 0){
         return 1;
     } 
     if (hasCollision(tile->type)){
         return -2;
     }
+
     
-    //Redrawing the tile that the player is one or if consumed drawing an empty tile
-    tileName newTile = (isConsumable(map->avtrIsOn, avtr, renderer)) ? empty : map->avtrIsOn;
-    map->tile[map->avtrRow][map->avtrCol].type = newTile;
-    drawTile(renderer, newTile, map->tile[map->avtrRow][map->avtrCol].rect);
-    
-    
-    //passed all checks
+    //Step 1. draw what tile you are on back to the tile before you move
+    drawTile(ren, map->avtrIsOn, map->tile[map->avtrRow][map->avtrCol].rect);
+
+    //Step 2. check the tile user is moving to, if consumbale, set tile to empty / if not don't change
+    tile->type = (isConsumable(tile->type, avtr, ren)) ? empty : tile->type;
+
+    //Step 3.Store the tile until user moves again
     map->avtrIsOn = tile->type;
+
+    //Step 4.Finnaly move user to the new tile
     map->avtrRow = newRow;
     map->avtrCol = newCol;
-    
-    //Drawing the new position of the avatar
-    SDL_SetRenderDrawColor(renderer, avtrColor[0], avtrColor[1], avtrColor[2], avtrColor[3]);
-    SDL_RenderFillRect(renderer, &tile->rect);
+    SDL_SetRenderDrawColor(ren, avtrColor[0], avtrColor[1], avtrColor[2], avtrColor[3]);
+    SDL_RenderFillRect(ren, &tile->rect);
     return 0;
 }
 
 /**
  * Holds the instruction for all the diffrent tiles we can draw and what colors they
  * should be etc etc...
- * @param renderer renders thing
+ * @param ren renders thing
  * @param type the type of tile we are going to draw
  * @param rect the tile/loctation we are drawing at
  */
-void drawTile(SDL_Renderer* renderer, tileName type, SDL_Rect rect){
+void drawTile(SDL_Renderer* ren, tileName type, SDL_Rect rect){
     switch (type) {
         case wall:
-            SDL_SetRenderDrawColor(renderer,61,71,62,255);
-            SDL_RenderDrawRect(renderer, &rect);
+            SDL_SetRenderDrawColor(ren,61,71,62,255);
+            SDL_RenderDrawRect(ren, &rect);
             break;
         case empty:
-            SDL_SetRenderDrawColor(renderer,0,0,0,255);
-            SDL_RenderFillRect(renderer, &rect);
+            SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+            SDL_RenderFillRect(ren, &rect);
             break;
         case fake_wall:
-            SDL_SetRenderDrawColor(renderer,0,0,0,255);
-            SDL_RenderFillRect(renderer, &rect);
-            SDL_SetRenderDrawColor(renderer,61,71,62,255);
-            SDL_RenderDrawRect(renderer, &rect);
+            SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+            SDL_RenderFillRect(ren, &rect);
+            SDL_SetRenderDrawColor(ren, 61, 71, 62, 255);
+            SDL_RenderDrawRect(ren, &rect);
             break;
         case gem:
-            SDL_SetRenderDrawColor(renderer,0,215,69,255);
-            SDL_RenderFillRect(renderer, &rect);
+            SDL_SetRenderDrawColor(ren, 0, 215, 69, 255);
+            SDL_RenderFillRect(ren, &rect);
             break;
         case key:
-            SDL_SetRenderDrawColor(renderer,215,210,0,255);
-            SDL_RenderFillRect(renderer, &rect);
+            SDL_SetRenderDrawColor(ren, 215, 210, 0, 255);
+            SDL_RenderFillRect(ren, &rect);
             break;
         case open_door:
-            SDL_SetRenderDrawColor(renderer,0,0,0,255);
-            SDL_RenderFillRect(renderer, &rect);
-            SDL_SetRenderDrawColor(renderer,147,124,70,255);
-            SDL_RenderDrawRect(renderer, &rect);
+            SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+            SDL_RenderFillRect(ren, &rect);
+            SDL_SetRenderDrawColor(ren, 147, 124, 70, 255);
+            SDL_RenderDrawRect(ren, &rect);
             break;
         case locked_door:
-            SDL_SetRenderDrawColor(renderer,147,124,70,255);
-            SDL_RenderFillRect(renderer, &rect);
+            SDL_SetRenderDrawColor(ren, 147, 124, 70, 255);
+            SDL_RenderFillRect(ren, &rect);
             break;
         default://invalid_tile
-            SDL_SetRenderDrawColor(renderer,255,0,255,255);
-            SDL_RenderDrawRect(renderer, &rect);
+            SDL_SetRenderDrawColor(ren, 255, 0, 255, 255);
+            SDL_RenderDrawRect(ren, &rect);
             break;
     }
 }
@@ -226,7 +228,7 @@ void drawTile(SDL_Renderer* renderer, tileName type, SDL_Rect rect){
  * @param avtr Struct holding the amount of keys and gems the player has 
  * @return if the tile is consumable then returns true false is not
  */
-bool isConsumable(tileName type, Avtr* avtr, SDL_Renderer* renderer){
+bool isConsumable(tileName type, Avtr* avtr, SDL_Renderer* ren){
     switch (type) {
         case gem:
             //gem ++
@@ -234,7 +236,7 @@ bool isConsumable(tileName type, Avtr* avtr, SDL_Renderer* renderer){
             return true;
         case key:
             avtr->keys++;
-            displayInvintory(renderer, avtr);
+            displayInvintory(ren, avtr);
             return true;
         default://Anything that is not consumable
             return false;
@@ -275,3 +277,30 @@ int gemsRemaining(Map* map, Avtr* avtr){
     
     return map->gems - avtr->gems;
 }
+
+///**
+// * 
+// * @param type the tilename
+// * @return  1 if it has "connected textures" with walls 
+// *          0 if not
+// *          idk if I want other types so who knows I did int instead of bool
+// */
+//int wallEnough(tileName type){
+//    switch (type) {
+//        case wall:
+//            return 1;
+//        case wall_top:
+//            return 1;
+//        case fake_wall:
+//            return 1;
+//        case open_door:
+//            return 1;
+//        case locked_door:
+//            return 1;
+//        case invalid_tile:
+//            return 1;
+//        default:
+//            return 0;
+//    }
+//}
+

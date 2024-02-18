@@ -1,58 +1,85 @@
 #include <stdio.h>
+#define NO_STDIO_REDIRECT
 #include <stdbool.h>
 #include "SDL2/SDL.h"
 #include "Map.h"
-
 const int SCREEN_W = 640;
 const int SCREEN_H = 480;
+
 
 int main(int argc, char** argv) {
     
     //Variables
-    SDL_Window *window = NULL;
+    SDL_Window* window = NULL;
+    int screenW;
+    int screenH;
     SDL_Renderer *render = NULL;
     SDL_Init(SDL_INIT_EVERYTHING);
-    SDL_Event e; //Currently used so I can use the close button
+    SDL_Event e;
     bool quit = false;
     Map map;
     Avtr avtr;
     int level = 1;
+    int maxLevel = argc - 1;
     
-    //Window to render, honesty I barely know how half of this works, but it does
-    SDL_CreateWindowAndRenderer(SCREEN_W, SCREEN_H, 0, &window, &render);
+    
+//    //Load textures
+//    if (IMG_Init(IMG_INIT_PNG) == 0) {
+//        printf("Error for Initialization of SDL2_image\n");
+//    }
     
     //File Checking
     if(argc > 1) {
-        if (!mapInit(&map, argv[level])) {
-            printf("map did not initialize\n");
+        if (!mapInit(&map, argv[level], &screenW, &screenH)) {
+            printf("Map did not initialize\n");
             return 0;
         }
-        displayMap(render, &map);
+        //Window to render, honesty I barely know how half of this works, but it does
+        window = SDL_CreateWindow("Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenW, screenH, 0);
+        render = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+        displayMap(window, render, &map);
+
     }else {
-        printf("did pass in any maps i\n");
+        printf("Did pass in any maps i\n");
         return 0;
     }
     avtrInit(&avtr);
-    
     
     //Main game loop
     while (!quit) {
         //Checks to see if the event is me hitting the close button & if it is it closes the application
         while (SDL_PollEvent(&e)){
-            if (e.type == SDL_QUIT || gemsRemaining(&map, &avtr) == 0){
+            //If you have collected all gems open next level
+            if (gemsRemaining(&map, &avtr) == 0 && level <= maxLevel){
+                mapUninit(&map);
+                level++;
+                if (!mapInit(&map, argv[level], &screenW, &screenH)) {
+                    printf("Map did not initialize\n");
+                    return 0;
+                }
+                SDL_SetWindowSize(window, screenW, screenH);
+                SDL_SetWindowPosition(window,SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+                avtrInit(&avtr);
+                displayMap(window, render, &map);
+            //Button that can be pressed during playtime
+            }else if (e.type == SDL_QUIT){
                 quit = true;
             } else if(e.type == SDL_KEYDOWN){
                 switch (e.key.keysym.sym) {
                     case SDLK_a:
+                    case SDLK_LEFT:
                         moveAvtr(render, &map,&avtr,'x',-1);
                         break;
                     case SDLK_s:
+                    case SDLK_DOWN:
                         moveAvtr(render, &map,&avtr,'y',1);
                         break;
                     case SDLK_d:
+                    case SDLK_RIGHT:
                         moveAvtr(render,&map,&avtr, 'x', 1);
                         break;
                     case SDLK_w:
+                    case SDLK_UP:
                         moveAvtr(render, &map,&avtr, 'y', -1);
                         break;
                     case SDLK_q:
@@ -62,10 +89,12 @@ int main(int argc, char** argv) {
             }
             displayInvintory(render, &avtr);
         }
-        
         SDL_RenderPresent(render);
     }
-    mapUninit(&map);
+    
+    SDL_DestroyRenderer(render);
+    SDL_DestroyWindow(window);
+    //IMG_Quit();
     SDL_Quit();
     return 0;
 }
