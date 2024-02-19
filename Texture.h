@@ -7,19 +7,20 @@
 #ifndef YESDL_TEXTURE_H
 #define YESDL_TEXTURE_H
 
-
-
-typedef enum {
-    wall_Tex, key_Tex, gem_Tex, 
-}texture;
-
 typedef struct {
-    //SDL_Texture* tiles[1];
-    //SDL_Texture* groupOfTextures[count];
-}GameTextures;
+    SDL_Texture* wall;
+    SDL_Texture* key;
+    SDL_Texture* keyVert;
+    SDL_Texture* keySmall; 
+    SDL_Texture* gem;
+    SDL_Texture* open_door;
+    SDL_Texture* locked_door;
+    SDL_Texture* player;
+    //SDL_Texture* name;
+}Assets;
 
-void loadTextures(SDL_Renderer* ren, SDL_Texture** textures);
+void initTextures(SDL_Renderer* ren, Assets* assets);
 SDL_Texture* loadTexture(SDL_Renderer* ren, const char* file);
-void destoryTexture(SDL_Texture** textures);
+void destoryTexture(Assets* txr);
 
 #endif //YESDL_TEXTURE_H

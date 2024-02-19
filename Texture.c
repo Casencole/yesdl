@@ -3,29 +3,44 @@
 //
 #include "Texture.h"
 
-//What if I just use this as a loadTileTex()
-void loadTextures(SDL_Renderer* ren, SDL_Texture** textures){
-    textures[wall_Tex] = loadTexture(ren, "..\\assets\\wall.png");
-    //textures[...] = loadTexture(ren, path);
+void initTextures(SDL_Renderer* ren, Assets* txr){
+    txr->wall = loadTexture(ren, "..\\assets\\wall.png");
+    txr->key = loadTexture(ren, "..\\assets\\key.png");
+    txr->keyVert = loadTexture(ren, "..\\assets\\keyVert.png");
+    txr->keySmall = loadTexture(ren, "..\\assets\\key_small.png");
+    txr->gem = loadTexture(ren, "..\\assets\\gem.png");
+    txr->open_door = loadTexture(ren, "..\\assets\\open_door.png");
+    txr->locked_door = loadTexture(ren, "..\\assets\\locked_door.png");
+    txr->player = loadTexture(ren, "..\\assets\\player.png");
+    //txr.type = loadTexture(ren, path);
 }
 
 SDL_Texture* loadTexture(SDL_Renderer* ren, const char* file) {
-    SDL_Surface* tempSurface = IMG_Load("file");
-    if (tempSurface == NULL){
-        printf("idk\n");
-        return 0;
+    SDL_Surface* tempSurface = IMG_Load(file);
+    if (tempSurface == NULL) {
+        tempSurface = IMG_Load("..\\assets\\noTexture.png");
+        if (tempSurface == NULL) {
+            SDL_Log("tempSurface is NULL\n");
+            return 0;
+        }
     }
     SDL_Texture* texture = SDL_CreateTextureFromSurface(ren, tempSurface);
     SDL_FreeSurface(tempSurface);
     if (texture == NULL){
-        printf("idk part 2\n");
+        SDL_Log("texture is NULL\n");
         return 0;
     }
     return texture;
 }
 
-void destoryTexture(SDL_Texture** textures){
-    for (int i = 0; i < 1; i++) {
-        //SDL_DestroyTexture();
-    }
+void destoryTexture(Assets* txr){
+    SDL_DestroyTexture(txr->wall);
+    SDL_DestroyTexture(txr->key);
+    SDL_DestroyTexture(txr->keyVert);
+    SDL_DestroyTexture(txr->keySmall);
+    SDL_DestroyTexture(txr->gem);
+    SDL_DestroyTexture(txr->open_door);
+    SDL_DestroyTexture(txr->locked_door);
+    SDL_DestroyTexture(txr->player);
+    //SDL_DestroyTexture(txr.type);
 }

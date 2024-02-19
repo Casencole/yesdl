@@ -12,66 +12,49 @@ void avtrInit(Avtr* avtr){
     avtr->gems = 0;
 }
 
-void displayInvintory(SDL_Renderer* render, Avtr* avtr){
-    //Big Yelloy block Indicating keys
-    SDL_Rect invintory;
-    invintory.x = 490;
-    invintory.y = 23;
-    invintory.w = 30;
-    invintory.h = 30;
-    SDL_SetRenderDrawColor(render,215,210,0,255);
-    SDL_RenderFillRect(render, &invintory);
-
-    //Black K spelt in the big yellow block to help indicate keys
-    SDL_SetRenderDrawColor(render,0,0,0,255);
-    SDL_RenderDrawLine(render, 500, 30, 500, 45);
-    SDL_RenderDrawLine(render, 500, 37, 507, 30);
-    SDL_RenderDrawLine(render, 500, 37, 507, 45);
-    
+void displayInvintory(SDL_Renderer* ren, Avtr* avtr, Assets txr, int screeW){
     //How many yellow tick marks should appear next to the key "symbol" assoicated with how many you have
     SDL_Rect keyTally[4];
     for (int i = 0; i < 4; i++) {
-        keyTally[i].x = 490 + 20 * (i + 2);
+        keyTally[i].x = (screeW - 150) + 20 * (i + 2); //Some sort of math good luck figuring out
         keyTally[i].y = 28;
-        keyTally[i].w = 8;
-        keyTally[i].h = 20;
+        keyTally[i].w = 30;
+        keyTally[i].h = 30;
     }
 
     switch (avtr->keys) {
         case 0:
-            showKeyAmount(render, keyTally , 0);
+            showKeyAmount(ren, keyTally , 0, txr);
             break;
         case 1:
-            showKeyAmount(render, keyTally , 1);
+            showKeyAmount(ren, keyTally , 1, txr);
             break;
         case 2:
-            showKeyAmount(render, keyTally , 2);
+            showKeyAmount(ren, keyTally , 2, txr);
             break;
         case 3:
-            showKeyAmount(render, keyTally , 3);
+            showKeyAmount(ren, keyTally , 3, txr);
             break;
         case 4:
-            showKeyAmount(render, keyTally , 4);
+            showKeyAmount(ren, keyTally , 4, txr);
             break;
         default:
-            showKeyAmount(render, keyTally , 0);
+            SDL_SetRenderDrawColor(ren,0,0,0,255);
+            SDL_RenderClear(ren);
             for (int i = 0; i < 3; i++) {
-                keyTally[i].y = 40;
-                keyTally[i].h = 8;
+                SDL_RenderCopy(ren, txr.keySmall, NULL, &keyTally[i]);
             }
-            showKeyAmount(render, keyTally , 3);
             break;
     }
     
 }
 
-static void showKeyAmount(SDL_Renderer* render, SDL_Rect* keyTally, int amount){
+static void showKeyAmount(SDL_Renderer* ren, SDL_Rect* keyTally, int amount, Assets txr){
+    SDL_SetRenderDrawColor(ren,0,0,0,255);
+    SDL_RenderClear(ren);
     for (int i = 0; i < 4; i++) {
-        if (i < amount){
-            SDL_SetRenderDrawColor(render,215,210,0,255);
-        } else {
-            SDL_SetRenderDrawColor(render,0,0,0,255);
+        if (i < amount) {
+            SDL_RenderCopy(ren, txr.keyVert, NULL, &keyTally[i]);
         }
-        SDL_RenderFillRect(render, &keyTally[i]);
     }
 }
