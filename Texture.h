@@ -9,6 +9,7 @@
 
 typedef struct {
     SDL_Texture* wall;
+    SDL_Texture* wallTop;
     SDL_Texture* key;
     SDL_Texture* keyVert;
     SDL_Texture* keySmall; 

@@ -42,6 +42,8 @@ int moveAvtr(Map* map, Avtr* avtr, char axis, int spaces);
 bool isConsumable(tileName type, Avtr* avtr);
 int gemsRemaining(Map* map, Avtr* avtr);
 bool hasCollision(tileName type);
+int wallEnough(tileName type);
+
 
 
 #endif //YESDL_MAP_H

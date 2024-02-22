@@ -5,6 +5,7 @@
 
 void initTextures(SDL_Renderer* ren, Assets* txr){
     txr->wall = loadTexture(ren, "..\\assets\\wall.png");
+    txr->wallTop = loadTexture(ren, "..\\assets\\wall_top.png");
     txr->key = loadTexture(ren, "..\\assets\\key.png");
     txr->keyVert = loadTexture(ren, "..\\assets\\keyVert.png");
     txr->keySmall = loadTexture(ren, "..\\assets\\key_small.png");
@@ -35,6 +36,7 @@ SDL_Texture* loadTexture(SDL_Renderer* ren, const char* file) {
 
 void destoryTexture(Assets* txr){
     SDL_DestroyTexture(txr->wall);
+    SDL_DestroyTexture(txr->wallTop);
     SDL_DestroyTexture(txr->key);
     SDL_DestroyTexture(txr->keyVert);
     SDL_DestroyTexture(txr->keySmall);

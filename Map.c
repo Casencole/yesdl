@@ -101,14 +101,16 @@ void displayMap(SDL_Renderer* ren, Map* map, Assets* txr){
         for (int j = 0; j < map->cols; ++j) {
             switch (map->tile[i][j].type) {
                 case wall:
-                    SDL_RenderCopy(ren, txr->wall, NULL, &map->tile[i][j].rect);
+                case fake_wall:
+                    if (i == map->rows - 1 || (i != map->rows - 1 && wallEnough(map->tile[i + 1][j].type) == 0) ){
+                        SDL_RenderCopy(ren, txr->wall, NULL, &map->tile[i][j].rect);
+                    } else {
+                        SDL_RenderCopy(ren, txr->wallTop, NULL, &map->tile[i][j].rect);
+                    }
                     break;
                 case empty:
                     SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
                     SDL_RenderFillRect(ren, &map->tile[i][j].rect);
-                    break;
-                case fake_wall:
-                    SDL_RenderCopy(ren, txr->wall, NULL, &map->tile[i][j].rect);
                     break;
                 case gem:
                     SDL_RenderCopy(ren, txr->gem, NULL, &map->tile[i][j].rect);
@@ -244,5 +246,16 @@ bool hasCollision(tileName type){
 int gemsRemaining(Map* map, Avtr* avtr){
     
     return map->gems - avtr->gems;
+}
+
+int wallEnough(tileName type){
+    switch (type) {
+        case wall:
+        case invalid_tile:
+        case fake_wall:
+        case locked_door:
+        case open_door: return 1;
+        default: return 0; //Thing that don't count as a wall
+    }
 }
 
