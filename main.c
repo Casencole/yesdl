@@ -13,7 +13,7 @@ SDL_Texture* texTotxr(SDL_Renderer*, TTF_Font*, char* filename);
 
 int main(int argc, char** argv) {
 
-    
+
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         SDL_Log("Error for Initialization of SDL\n");
     }
@@ -25,76 +25,103 @@ int main(int argc, char** argv) {
     }
 
     //Variables
-    SDL_Window* window = NULL;
+    SDL_Window *window = NULL;
     int screenW = 640;
-    int screenH= 480;
-    SDL_Renderer* render = NULL;
-    SDL_Event e;
-    bool quit = false;
+    int screenH = 480;
+    SDL_Renderer *render = NULL;
     Map map;
     Avtr avtr;
     Assets assets;
+    SDL_Event e;
+    bool quit = false;
+    Node* lvlHead = NULL;
+    
     int level = 1;
     int maxLevel = argc - 1;
-    
+
     //Whatever this is
     window = SDL_CreateWindow("Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenW, screenH, 0);
     render = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    
+
     // ************************************************************** level select?
-    //Opens the list of avaible levels and has a int at the top of how many levels are stored in the file
-    FILE* lvlFile = fopen("..\\levels\\levelSelect.txt", "r");
-    TTF_Font* font = TTF_OpenFont("..\\assets\\ArialNarrow7.ttf", 25);
+    //Opens the list of avaible levels and has an int at the top of how many levels are stored in the file
+    FILE *lvlFile = fopen("..\\levels\\levelSelect.txt", "r");
+    TTF_Font *font = TTF_OpenFont("..\\assets\\ArialNarrow7.ttf", 255);
     if (lvlFile == NULL) {
         SDL_Log("level file is null\n");
         return 0;
-    } else {
-        //If a linked list I should not need to have this
-        int levelsAvalible;
-        fscanf(lvlFile, "%d ", &levelsAvalible);
-
-        //Give Memory
-        //char* levelSelect[levelsAvalible];
-//        for (int i = 0; i < levelsAvalible; i++) {
-//            levelSelect[i] = malloc(100 * sizeof(char*));
-//        }
-
-        //Reads in the potenial levels
-        SDL_Log("%d\n", levelsAvalible);
-        Node* head;
-        char* name;
-        for (int i = 0; i < levelsAvalible; i++) {
-            fscanf(lvlFile, "%s ", name);
-            insertNode(&head, name);
-        }
-
-        //bool levelsPicked = false;
-        SDL_Rect lvls[levelsAvalible];
-        for (int i = 0; i < levelsAvalible; i++) {
-            lvls[i].h = 40;
-            lvls[i].w = screenW - 20;
-            lvls[i].x = 10;
-            lvls[i].y = 10 + (i * 50);
-            SDL_RenderCopy(render, texTotxr(render, font, levelSelect[i]), NULL, &lvls[i]);
-        }
-        SDL_RenderPresent(render);
-        
-        //Free Memory
-        for (int i = 0; i < levelsAvalible; i++) {
-            free(levelSelect[i]);
-            levelSelect[i] = NULL;
-        }
-        TTF_CloseFont(font);
-        fclose(lvlFile);
     }
-
-    SDL_Delay(1000);
+    
+    //Reads in the potenial levels
+    Node *listHead = NULL;
+    char name[100]; //Buffer of 100 character for file path
+    while (fscanf(lvlFile, "%s ", name) != EOF) {
+        SDL_Log("%s \n", name);
+        insertNode(&listHead, name);
+    }
+    fclose(lvlFile);
+    
+    //need to clean this up as the size and postion of button are not finale
+    Node* current = listHead;
+    int i = 0;
+    while (current != NULL) {
+        SDL_Log("%s\n", current->name);
+        current->rect->h = 40;
+        current->rect->w = screenW - 220;
+        current->rect->x = 10;
+        current->rect->y = 10 + (i++ * 50);
+        SDL_RenderCopy(render, texTotxr(render, font, &current->name[12]), NULL, current->rect);
+        current = (Node *) current->next;
+    }
+    
+    SDL_RenderPresent(render);
+    while(!quit) { //quit here just means continue 
+        while (SDL_PollEvent(&e)) {
+            Node** node;
+            int x, y;
+            switch (e.type) {
+                case SDL_QUIT:
+                    quit = true;
+                    break;
+                case SDL_KEYDOWN:
+                    if (e.key.keysym.sym == SDLK_c){
+                        quit = true;
+                    }
+                case SDL_MOUSEBUTTONDOWN:
+                    SDL_GetMouseState(&x, &y);
+                    SDL_Log("Mouse Position: %d, %d \n", x, y);
+                    node = isInNode(&listHead, x, y);
+                    if (node != NULL){
+                        if ((*node)->selected == 0){ //Pick
+                            SDL_SetRenderDrawColor(render, 0, 100, 70, 255);
+                            insertNode(&lvlHead, (*node)->name);
+                            (*node)->selected = 1;
+                        } else {                    //un pick
+                            SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
+                            removeNode(&lvlHead, (*node)->name);
+                            (*node)->selected = 0;
+                        }
+                        SDL_RenderDrawRect(render, (*node)->rect);
+                        SDL_RenderPresent(render);
+                    }
+                    break;
+                case SDL_MOUSEBUTTONUP:
+                case SDL_MOUSEMOTION:
+                    break;
+//                default:
+//                    SDL_Log("Nothing here");
+//                    break;
+            }
+        }
+    }
+    quit = false;
+    TTF_CloseFont(font);
     // **************************************************************
     
     //File Checking
     if(argc > 1) {
-        if (!mapInit(&map, argv[level], &screenW, &screenH)) {
+        if (!mapInit(&map, lvlHead->name, &screenW, &screenH)) {
             SDL_Log("Map did not initialize\n");
             return 0;
         }
@@ -151,6 +178,9 @@ int main(int argc, char** argv) {
                     case SDLK_q:
                         quit = true;
                         break; 
+                    default:
+                        SDL_Log("No Button Mapping for Key");
+                        break;
                 }
             }
             if(updateDispaly == 0) {
@@ -162,6 +192,7 @@ int main(int argc, char** argv) {
     }
     
     //Clean up
+    destroyList(&listHead);
     destoryTexture(&assets);
     SDL_DestroyRenderer(render);
     SDL_DestroyWindow(window);
