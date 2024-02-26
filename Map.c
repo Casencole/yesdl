@@ -244,7 +244,7 @@ bool hasCollision(tileName type){
  * @return 
  */
 int gemsRemaining(Map* map, Avtr* avtr){
-    
+//s
     return map->gems - avtr->gems;
 }
 

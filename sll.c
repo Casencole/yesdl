@@ -71,10 +71,12 @@ void destroyList(Node** head){
 
 void printList(Node* head){
     Node *current = head;
+    SDL_Log("~~~~~~~~~~~~~~~~~~~~~~~~~\nINFO: Current Levels Selected\n");
     while (current != NULL) {
         SDL_Log("%s\n", current->name);
         current = (Node *) current->next;
     }
+    SDL_Log("~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 }
 
 Node** isInNode(Node** head, int x, int y){
@@ -85,7 +87,7 @@ Node** isInNode(Node** head, int x, int y){
             x < (*current)->rect->x + (*current)->rect->w &&
             y > (*current)->rect->y &&
             y < (*current)->rect->y + (*current)->rect->h) {
-            SDL_Log("Mouse is insdie Node %s", (*current)->name);
+            SDL_Log("Clicked Node %s", (*current)->name);
             return current;
         }
         //SDL_Log("test %d", i++);
