@@ -1,8 +1,12 @@
-//
 // Created by casen on 2/15/2024.
-//
+// Handels all the textues (loading and unloading)
 #include "Texture.h"
 
+/**
+ * loads all textures at the start of game
+ * @param ren renders thing
+ * @param txr The struct holding all of the textures
+ */
 void initTextures(SDL_Renderer* ren, Assets* txr){
     txr->wall = loadTexture(ren, "..\\assets\\wall.png");
     txr->wallTop = loadTexture(ren, "..\\assets\\wall_top.png");
@@ -13,9 +17,16 @@ void initTextures(SDL_Renderer* ren, Assets* txr){
     txr->open_door = loadTexture(ren, "..\\assets\\open_door.png");
     txr->locked_door = loadTexture(ren, "..\\assets\\locked_door.png");
     txr->player = loadTexture(ren, "..\\assets\\player.png");
+    txr->button = loadTexture(ren, "..\\assets\\menu.png");
     //txr.type = loadTexture(ren, path);
 }
 
+/**
+ * turns an image into a texture
+ * @param ren renders thing
+ * @param file the png being loaded in as a texture
+ * @return 
+ */
 SDL_Texture* loadTexture(SDL_Renderer* ren, const char* file) {
     SDL_Surface* tempSurface = IMG_Load(file);
     if (tempSurface == NULL) {
@@ -34,6 +45,10 @@ SDL_Texture* loadTexture(SDL_Renderer* ren, const char* file) {
     return texture;
 }
 
+/**
+ * Clears all texture call after game is over before application end
+ * @param txr The struct holding all of the textures
+ */
 void destoryTexture(Assets* txr){
     SDL_DestroyTexture(txr->wall);
     SDL_DestroyTexture(txr->wallTop);
@@ -44,5 +59,6 @@ void destoryTexture(Assets* txr){
     SDL_DestroyTexture(txr->open_door);
     SDL_DestroyTexture(txr->locked_door);
     SDL_DestroyTexture(txr->player);
+    SDL_DestroyTexture(txr->button);
     //SDL_DestroyTexture(txr.type);
 }

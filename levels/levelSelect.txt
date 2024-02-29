@@ -3,5 +3,17 @@
 ..\\levels\\big.txt
 ..\\levels\\simple.txt
 ..\\levels\\small.txt
-..\\levels\\tiny.txt
-..\\test-testedy-test.txt
+..\\levels\\tiny.txt  
+..\\levels\\huge_test.txt1
+..\\levels\\huge.txt1
+..\\levels\\big.txt1
+..\\levels\\simple.txt1
+..\\levels\\small.txt1
+..\\levels\\tiny.txt1
+..\\levels\\huge_test.txt35345
+..\\levels\\huge.txt434534
+..\\levels\\big.txt34534534
+..\\levels\\simple.txt53453453
+..\\levels\\small.txt45345353
+..\\levels\\tiny.txt    454
+

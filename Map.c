@@ -1,13 +1,11 @@
-//
 // Created by casen on 2/10/2024.
-// Map stuff dealing with map
+// Handels all the fucntions dealing with each map, reading from file, loading, displaying, etc. 
+// This makes each map 
 #include "Map.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-const int SIZE = 30;
-const int bgColor[4]= {0, 0, 0, 255};
-const int avtrColor[4]= {0, 59, 111, 255};
+const int SIZE = 30; // Size of each tile
 
 /**
  * allocates memory and reads level from text and set's each tile to the resepctive type
@@ -248,6 +246,13 @@ int gemsRemaining(Map* map, Avtr* avtr){
     return map->gems - avtr->gems;
 }
 
+/**
+ * Function checks to see if the tile is in the "wall" cetegory 
+ * (only used to see if displayMap should place a top wall or bottom wall tile)
+ * @param type diffrent possible tiles
+ * @return  1 for wall-types 
+ *          0 for non wall-types
+ */
 int wallEnough(tileName type){
     switch (type) {
         case wall:
