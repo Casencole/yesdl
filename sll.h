@@ -23,5 +23,5 @@ void removeNode(Node** head, const char*);
 void destroyList(Node** head);
 void printList(Node*); //This one is purley for dev purposes at least the way I am using it when I make it
 Node** isInNode(Node** head, int x, int y);
-int updatePos(SDL_Renderer*, Node** head,  int change, SDL_Color*);
+int updatePos(Node** head,  int change);
 #endif //YESDL_SLL_H

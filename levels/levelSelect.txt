@@ -15,5 +15,4 @@
 ..\\levels\\big.txt34534534
 ..\\levels\\simple.txt53453453
 ..\\levels\\small.txt45345353
-..\\levels\\tiny.txt    454
-
+..\\levels\\tiny.txt

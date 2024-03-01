@@ -139,7 +139,7 @@ Node** isInNode(Node** head, int x, int y){
  * @return 0 if move went well
  *        -1 if move not made
  */
-int updatePos(SDL_Renderer* ren, Node** head,  int change, SDL_Color* colorIndex){
+int updatePos(Node** head,  int change){
     // Check to make sure there is enough buttons to need to scroll
     int i = 0;
     Node* current = *head;
@@ -147,37 +147,28 @@ int updatePos(SDL_Renderer* ren, Node** head,  int change, SDL_Color* colorIndex
         current = (Node *) current->next;
         i++;
     }
-    if (i < 15){
+    if (i < 15){// Need at least 15 buttons to scroll
         return -1;
     }
     
-    // Clear enverything 
-    SDL_SetRenderDrawColor(ren, colorIndex[BACKGROUND].r, colorIndex[BACKGROUND].g, colorIndex[BACKGROUND].b, colorIndex[BACKGROUND].a);
-    SDL_RenderClear(ren);
-    
-    
-    // Loop through and redraw eveything at new position
     current = *head;
-    int color;
     while (current != NULL) {
-        color = (current->selected == 1) ? ACCENT : TEXT;
-        SDL_SetRenderDrawColor(ren, colorIndex[color].r, colorIndex[color].g, colorIndex[color].b, colorIndex[color].a);
-        
+        // Loop through eveything and update new position
         current->rect->y += change;
         current->textRect->y += change;
-        SDL_RenderDrawRect(ren, current->rect);
-        SDL_RenderCopy(ren, current->txr, NULL, current->rect);
-
         
         // Make sure you can't scroll down past the last one
         if (current->next == NULL && current->rect->y < (360 - current->rect->h)){
-            updatePos(ren, head, 1, colorIndex);
+            updatePos(head, 1);
         }
+        
         current = (Node *) current->next;
     }
+    
     // Make sure you can't scroll past the first one
     if ( (*head)->rect->y > 10){
-        updatePos(ren, head, -1, colorIndex);
+        updatePos(head, -1);
     }
+    return -1;
 }
 
