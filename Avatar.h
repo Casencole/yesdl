@@ -7,6 +7,8 @@
 #ifndef YESDL_AVATAR_H
 #define YESDL_AVATAR_H
 
+extern const int SIDE_SIZE;
+
 typedef struct {
     int keys;
     int gems;

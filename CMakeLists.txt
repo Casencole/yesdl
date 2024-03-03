@@ -18,6 +18,8 @@ add_executable(yesdl main.c
         Texture.h
         sll.c
         sll.h
+        Edit.h
+        Edit.c
 )
 
 target_link_libraries(${PROJECT_NAME} ${SDL2TTF_LIBRARY} ${SDL2_IMAGE_LIBRARY} ${SDL2_LIBRARY})

@@ -5,8 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const int SIZE = 30; // Size of each tile
-
 /**
  * allocates memory and reads level from text and set's each tile to the resepctive type
  * @param map Struct holding a lot of info about the map (amount of gems, rows, cols, avtrRow, avtrCol,
@@ -24,9 +22,16 @@ bool mapInit(Map* map, const char* filename, int* screenW, int* screenH){
     fscanf(level, "%d %d %d %d ", &map->rows, &map->cols, &map->avtrRow, &map->avtrCol);
     map->gems = 0;
     map->avtrIsOn = empty;
+
     //set the values of screenW and screenH to the correct things
-    *screenW = map->cols * SIZE + 120;
+    *screenW = map->cols * SIZE + SIDE_SIZE;
     *screenH = map->rows * SIZE;
+
+    map->side.x = *screenW - SIDE_SIZE;
+    map->side.y = 0;
+    map->side.h = *screenH;
+    map->side.w = SIDE_SIZE;
+    
     
     map -> tile = malloc(sizeof(Tile *) * map->rows);
     for (int i = 0; i < map->rows; i++) {
@@ -101,28 +106,28 @@ void displayMap(SDL_Renderer* ren, Map* map, Assets* txr){
                 case wall:
                 case fake_wall:
                     if (i == map->rows - 1 || (i != map->rows - 1 && wallEnough(map->tile[i + 1][j].type) == 0) ){
-                        SDL_RenderCopy(ren, txr->wall, NULL, &map->tile[i][j].rect);
+                        SDL_RenderCopy(ren, txr->wall[0], NULL, &map->tile[i][j].rect);
                     } else {
-                        SDL_RenderCopy(ren, txr->wallTop, NULL, &map->tile[i][j].rect);
+                        SDL_RenderCopy(ren, txr->wall[1], NULL, &map->tile[i][j].rect);
                     }
                     break;
                 case empty:
-                    SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
-                    SDL_RenderFillRect(ren, &map->tile[i][j].rect);
+                    SDL_RenderCopy(ren, txr->empty, NULL, &map->tile[i][j].rect);
                     break;
                 case gem:
+                    SDL_RenderCopy(ren, txr->empty, NULL, &map->tile[i][j].rect);
                     SDL_RenderCopy(ren, txr->gem, NULL, &map->tile[i][j].rect);
                     break;
                 case key:
-                    SDL_RenderCopy(ren, txr->key, NULL, &map->tile[i][j].rect);
+                    SDL_RenderCopy(ren, txr->empty, NULL, &map->tile[i][j].rect);
+                    SDL_RenderCopy(ren, txr->key[0], NULL, &map->tile[i][j].rect);
                     break;
                 case open_door:
-                    SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
-                    SDL_RenderFillRect(ren, &map->tile[i][j].rect);
-                    SDL_RenderCopy(ren, txr->open_door, NULL, &map->tile[i][j].rect);
+                    SDL_RenderCopy(ren, txr->empty, NULL, &map->tile[i][j].rect);
+                    SDL_RenderCopy(ren, txr->door[1], NULL, &map->tile[i][j].rect);
                     break;
                 case locked_door:
-                    SDL_RenderCopy(ren, txr->locked_door, NULL, &map->tile[i][j].rect);
+                    SDL_RenderCopy(ren, txr->door[0], NULL, &map->tile[i][j].rect);
                     break;
                 default://invalid_tile
                     SDL_SetRenderDrawColor(ren, 255, 0, 255, 255);
@@ -132,6 +137,8 @@ void displayMap(SDL_Renderer* ren, Map* map, Assets* txr){
         }
     }
     SDL_RenderCopy(ren, txr->player, NULL, &map->tile[map->avtrRow][map->avtrCol].rect);
+//    SDL_RenderCopy(ren, txr->side, NULL, &map->side);
+    
 }
 
 /**

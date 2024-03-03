@@ -1,5 +1,5 @@
 // Created by casen on 2/12/2024.
-// Does this need to be its own file (idk) but just some function for the avatar and their invitory 
+// Does this need to be its own file (IDK) but just some function for the avatar and their invitory 
 #include "Avatar.h"
 
 /**
@@ -22,7 +22,7 @@ void displayInvintory(SDL_Renderer* ren, Avtr* avtr, Assets txr, int screenW){
     //How many yellow tick marks should appear next to the key "symbol" assoicated with how many you have
     SDL_Rect keyTally[4];
     for (int i = 0; i < 4; i++) {
-        keyTally[i].x = (screenW - 150) + 20 * (i + 2); //Some sort of math good luck figuring out
+        keyTally[i].x = (screenW - SIDE_SIZE) + (20 * i); //Some sort of math good luck figuring out
         keyTally[i].y = 28;
         keyTally[i].w = 30;
         keyTally[i].h = 30;
@@ -48,7 +48,7 @@ void displayInvintory(SDL_Renderer* ren, Avtr* avtr, Assets txr, int screenW){
             SDL_SetRenderDrawColor(ren,0,0,0,255);
             SDL_RenderClear(ren);
             for (int i = 0; i < 3; i++) {
-                SDL_RenderCopy(ren, txr.keySmall, NULL, &keyTally[i]);
+                SDL_RenderCopy(ren, txr.key[2], NULL, &keyTally[i]);
             }
             break;
     }
@@ -67,7 +67,7 @@ static void showKeyAmount(SDL_Renderer* ren, SDL_Rect* keyTally, int amount, Ass
     SDL_RenderClear(ren);
     for (int i = 0; i < 4; i++) {
         if (i < amount) {
-            SDL_RenderCopy(ren, txr.keyVert, NULL, &keyTally[i]);
+            SDL_RenderCopy(ren, txr.key[1], NULL, &keyTally[i]);
         }
     }
 }

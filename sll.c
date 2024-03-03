@@ -10,8 +10,8 @@
  * @param name String that will be stored in the node
  * @return the new node with the name stored
  */
-Node* createNode(char* name){
-    Node* newNode = malloc(sizeof(Node));
+Buttons* createNode(char* name){
+    Buttons* newNode = malloc(sizeof(Buttons));
     if (newNode == NULL){
         SDL_Log("newNode was not made\n");
         return 0;
@@ -35,14 +35,14 @@ Node* createNode(char* name){
  * @param head The head node of a linked list
  * @param name String that will be stored in the node
  */
-void insertNode(Node** head, char* name){
-    Node* newNode = createNode(name);
+void insertNode(Buttons** head, char* name){
+    Buttons* newNode = createNode(name);
     if (*head == NULL) {
         *head = newNode;
     } else {
-        Node* temp = *head;
+        Buttons* temp = *head;
         while (temp->next != NULL) {
-            temp = (Node *) temp->next;
+            temp = (Buttons *) temp->next;
         }
         temp->next = newNode;
     }
@@ -54,19 +54,19 @@ void insertNode(Node** head, char* name){
  * @param key right now the key is just a string is compared to the name
  *              (only works if each node has a unique name which in this application it should)
  */
-void removeNode(Node** head, const char* key){
-    Node* curent = *head;
-    Node* prev = NULL;
+void removeNode(Buttons** head, const char* key){
+    Buttons* curent = *head;
+    Buttons* prev = NULL;
     
     if (curent != NULL && strcmp(curent->name, key) == 0){
-        *head = (Node *) curent->next;
+        *head = (Buttons *) curent->next;
         free(curent);
         return;
     }
     
     while (curent != NULL && strcmp(curent->name, key) != 0){
         prev = curent;
-        curent = (Node *) curent->next;
+        curent = (Buttons *) curent->next;
     }
     
     if (curent == NULL) return;
@@ -78,13 +78,13 @@ void removeNode(Node** head, const char* key){
  * Frees all the nodes in the list from the head and onward
  * @param head The head node of a linked list
  */
-void destroyList(Node** head){
-    Node* current = *head;
-    Node* prev = NULL;
+void destroyList(Buttons** head){
+    Buttons* current = *head;
+    Buttons* prev = NULL;
     while (current != NULL){
         prev = current;
         SDL_DestroyTexture(current->txr);
-        current = (Node *) current->next;
+        current = (Buttons *) current->next;
         free(prev->name);
         free(prev->textRect);
         free(prev->rect);
@@ -96,12 +96,12 @@ void destroyList(Node** head){
  * Prints the whole list from the node given onward (does not technicly need to be a head)
  * @param head The head node of a linked list
  */
-void printList(Node* head){
-    Node *current = head;
+void printList(Buttons* head){
+    Buttons *current = head;
     SDL_Log("~~~~~~~~~~~~~~~~~~~~~~~~~\nINFO: Current Levels Selected\n");
     while (current != NULL) {
         SDL_Log("%s\n", current->name);
-        current = (Node *) current->next;
+        current = (Buttons *) current->next;
     }
     SDL_Log("~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 }
@@ -114,19 +114,17 @@ void printList(Node* head){
  * @return  if in the node returns said node
  *          otherwise reuturns null if not in a node
  */
-Node** isInNode(Node** head, int x, int y){
-    Node** current = head;
-    int i = 0 ;
+Buttons** isInNode(Buttons** head, int x, int y){
+    Buttons** current = head;
     while (*current != NULL) {
         if (x > (*current)->rect->x &&
             x < (*current)->rect->x + (*current)->rect->w &&
             y > (*current)->rect->y &&
             y < (*current)->rect->y + (*current)->rect->h) {
-            SDL_Log("Clicked Node %s", (*current)->name);
+            SDL_Log("Clicked Buttons %s", (*current)->name);
             return current;
         }
-        //SDL_Log("test %d", i++);
-        current = (Node **) &((*current)->next);
+        current = (Buttons**) &((*current)->next);
     }
     return NULL;
 }
@@ -139,12 +137,12 @@ Node** isInNode(Node** head, int x, int y){
  * @return 0 if move went well
  *        -1 if move not made
  */
-int updatePos(Node** head,  int change){
+int updatePos(Buttons** head, int change){
     // Check to make sure there is enough buttons to need to scroll
     int i = 0;
-    Node* current = *head;
+    Buttons* current = *head;
     while (current != NULL){
-        current = (Node *) current->next;
+        current = (Buttons *) current->next;
         i++;
     }
     if (i < 15){// Need at least 15 buttons to scroll
@@ -162,7 +160,7 @@ int updatePos(Node** head,  int change){
             updatePos(head, 1);
         }
         
-        current = (Node *) current->next;
+        current = (Buttons *) current->next;
     }
     
     // Make sure you can't scroll past the first one
@@ -171,4 +169,5 @@ int updatePos(Node** head,  int change){
     }
     return -1;
 }
+
 

@@ -9,7 +9,11 @@
 #ifndef YESDL_MAP_H
 #define YESDL_MAP_H
 
+extern const int SIZE;
+
+
 typedef enum {
+  // Tiles to be used in game  
   empty,
   wall, 
   fake_wall,
@@ -17,6 +21,10 @@ typedef enum {
   key, 
   open_door, 
   locked_door,
+  //Used for level edit/making
+  player,
+  save,
+  leave,
   invalid_tile,
 }tileName;
 
@@ -33,6 +41,7 @@ typedef struct{
     int gems;
     Tile** tile;
     tileName avtrIsOn;
+    SDL_Rect side; 
 } Map;
 
 bool mapInit(Map* map, const char* filename, int* screenW, int* screnH);

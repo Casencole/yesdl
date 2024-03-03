@@ -84,6 +84,13 @@ build CMakeFiles/yesdl.dir/sll.c.obj: C_COMPILER__yesdl_unscanned_Debug C$:/User
   OBJECT_DIR = CMakeFiles\yesdl.dir
   OBJECT_FILE_DIR = CMakeFiles\yesdl.dir
 
+build CMakeFiles/yesdl.dir/Edit.c.obj: C_COMPILER__yesdl_unscanned_Debug C$:/Users/casen/CLionProjects/yesdl/Edit.c || cmake_object_order_depends_target_yesdl
+  DEP_FILE = CMakeFiles\yesdl.dir\Edit.c.obj.d
+  FLAGS = -g -std=gnu99 -fdiagnostics-color=always
+  INCLUDES = -IC:/MinGW/include/SDL2
+  OBJECT_DIR = CMakeFiles\yesdl.dir
+  OBJECT_FILE_DIR = CMakeFiles\yesdl.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target yesdl
@@ -92,7 +99,7 @@ build CMakeFiles/yesdl.dir/sll.c.obj: C_COMPILER__yesdl_unscanned_Debug C$:/User
 #############################################
 # Link the executable yesdl.exe
 
-build yesdl.exe: C_EXECUTABLE_LINKER__yesdl_Debug CMakeFiles/yesdl.dir/main.c.obj CMakeFiles/yesdl.dir/Map.c.obj CMakeFiles/yesdl.dir/Avatar.c.obj CMakeFiles/yesdl.dir/Texture.c.obj CMakeFiles/yesdl.dir/sll.c.obj | C$:/MinGW/lib/libSDL2_ttf.dll.a C$:/MinGW/lib/libSDL2_ttf.dll.a C$:/MinGW/lib/libSDL2_image.dll.a C$:/MinGW/lib/libSDL2main.a C$:/MinGW/lib/libSDL2.dll.a C$:/MinGW/lib/libSDL2_ttf.dll.a C$:/MinGW/lib/libSDL2_image.dll.a C$:/MinGW/lib/libSDL2main.a C$:/MinGW/lib/libSDL2.dll.a
+build yesdl.exe: C_EXECUTABLE_LINKER__yesdl_Debug CMakeFiles/yesdl.dir/main.c.obj CMakeFiles/yesdl.dir/Map.c.obj CMakeFiles/yesdl.dir/Avatar.c.obj CMakeFiles/yesdl.dir/Texture.c.obj CMakeFiles/yesdl.dir/sll.c.obj CMakeFiles/yesdl.dir/Edit.c.obj | C$:/MinGW/lib/libSDL2_ttf.dll.a C$:/MinGW/lib/libSDL2_ttf.dll.a C$:/MinGW/lib/libSDL2_image.dll.a C$:/MinGW/lib/libSDL2main.a C$:/MinGW/lib/libSDL2.dll.a C$:/MinGW/lib/libSDL2_ttf.dll.a C$:/MinGW/lib/libSDL2_image.dll.a C$:/MinGW/lib/libSDL2main.a C$:/MinGW/lib/libSDL2.dll.a
   FLAGS = -g
   LINK_LIBRARIES = -lmingw32  -mwindows  C:/MinGW/lib/libSDL2_ttf.dll.a  C:/MinGW/lib/libSDL2_ttf.dll.a  C:/MinGW/lib/libSDL2_image.dll.a  -lmingw32  -mwindows  C:/MinGW/lib/libSDL2main.a  C:/MinGW/lib/libSDL2.dll.a  C:/MinGW/lib/libSDL2_ttf.dll.a  C:/MinGW/lib/libSDL2_image.dll.a  C:/MinGW/lib/libSDL2main.a  C:/MinGW/lib/libSDL2.dll.a  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\yesdl.dir
