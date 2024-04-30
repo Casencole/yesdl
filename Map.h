@@ -9,7 +9,7 @@
 #ifndef YESDL_MAP_H
 #define YESDL_MAP_H
 
-extern const int SIZE;
+const int SIZE;
 
 
 typedef enum {

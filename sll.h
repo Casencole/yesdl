@@ -8,20 +8,20 @@
 //Shoule 1000% generalize this at somepoint, so I don't need to change data types for diffrent projects
  typedef enum {TEXT, BACKGROUND, ACCENT, FAIL, SUCCESS, NUM_COLORS }RGB;// ACCENT needs a better name and I don't think it should be placed here 
 
-typedef struct {
+typedef struct Node{
     char* name;
     int selected;
     SDL_Rect* rect;
     SDL_Rect* textRect;
     SDL_Texture* txr;
     struct Node* next;
-} Buttons ;
+} Button ;
 //int data is just a place-holder type that needs to change to be something more unqiue
-Buttons* createNode(char*);             //Helper function to insert
-void insertNode(Buttons** head, char*); //Adds the node at the end of the linked list
-void removeNode(Buttons** head, const char*);
-void destroyList(Buttons** head);
-void printList(Buttons*); //This one is purley for dev purposes at least the way I am using it when I make it
-Buttons** isInNode(Buttons** head, int x, int y);
-int updatePos(Buttons** head, int change);
+Button* createNode(char*);             //Helper function to insert
+void insertNode(Button** head, char*); //Adds the node at the end of the linked list
+void removeNode(Button** head, const char*);
+void destroyList(Button** head);
+void printList(Button*); //This one is purley for dev purposes at least the way I am using it when I make it
+Button* isInNode(Button* head, int x, int y);
+int updatePos(Button** head, int change);
 #endif //YESDL_SLL_H

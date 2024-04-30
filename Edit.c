@@ -8,10 +8,10 @@
  * @param screenW ...
  * @return the head of list of buttons
  */
-Buttons* initTileSelection(int screenW, Assets txr){
+Button* initTileSelection(int screenW, Assets txr){
     // Make a button for each type of tile and invalid_tile will always be the last in the enum of tileName
     char* keyName;
-    Buttons* tileHead = NULL;
+    Button* tileHead = NULL;
     for (int i = 0; i < invalid_tile; i++){
         sprintf(keyName, "%d", i);
         insertNode(&tileHead, keyName);
@@ -22,7 +22,7 @@ Buttons* initTileSelection(int screenW, Assets txr){
 
     // Set the postion of where each button to the correct location 
     int whIle = 0;
-    Buttons* current = tileHead;
+    Button* current = tileHead;
     while (current != NULL){
         current->rect->w = SIZE * 2;
         current->rect->h = SIZE * 2;
@@ -62,7 +62,7 @@ Buttons* initTileSelection(int screenW, Assets txr){
                 break;
         }
         whIle++;
-        current = (Buttons *) current->next;
+        current = current->next;
     }
     
     
@@ -78,9 +78,9 @@ Buttons* initTileSelection(int screenW, Assets txr){
  * @param head head of teh tile selection list
  * @param txr struct of all textrues
  */
-void displayTileSelection(SDL_Renderer* ren, Buttons* head, SDL_Color* colorIndex){
+void displayTileSelection(SDL_Renderer* ren, Button* head, SDL_Color* colorIndex){
     int color;
-    Buttons* current = head;
+    Button* current = head;
     while (current != NULL){
         SDL_RenderCopy(ren, current->txr, NULL, current->rect);
         if (strcmp(current->name, "8") == 0){// 8 is the save button, this is a crap way to do this, I'll fix it later
@@ -90,7 +90,7 @@ void displayTileSelection(SDL_Renderer* ren, Buttons* head, SDL_Color* colorInde
         }
         SDL_SetRenderDrawColor(ren, colorIndex[color].r, colorIndex[color].g, colorIndex[color].b, colorIndex[color].a);
         SDL_RenderDrawRect(ren, current->rect);
-        current = (Buttons *) current->next;
+        current = current->next;
     }
 };
 

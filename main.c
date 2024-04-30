@@ -1,3 +1,16 @@
+/** Q in any mode should quit the game
+ *  E in play mode should take you to edit mode
+ *  P in edit mode should take you to play mode
+ *  WASD or Arrow Keys to move
+ */
+ 
+/** List of bugs to fix and things I want to change
+ * --After exit on an edit level the level is still in the lvlHead
+ * --For the Tile bar I want to make it more scaleable with thte size of the window 
+ *      * Have the last 1 or so tiles shown and the save/exit/ A show all tile type menu
+ * --Get typing working for saving a level 
+ **/
+
 #include <stdio.h>
 #include "SDL2/SDL.h"
 #include "Map.h"
@@ -11,9 +24,10 @@ const int DFLT_SCREEN_W = 640;
 const int DFLT_SCREEN_H = 480;
 const int EDIT_SCREEN_H = 660;// How much space I need for the eidt menu
 
-void drawlevels(SDL_Renderer* ren, Buttons* head, Assets txr, SDL_Color* colorIndex);
-void drawMode(SDL_Renderer* ren, Buttons* menuHead, SDL_Color* colorIndex);
-int menuButton(Buttons* node);
+void drawlevels(SDL_Renderer* ren, Button* head, Assets txr, SDL_Color* colorIndex);
+void drawMode(SDL_Renderer* ren, Button* menuHead, SDL_Color* colorIndex);
+void deselectAllButtons(Button* head);
+int  menuButton(Button* node);
 
 typedef enum {MAINMENU = -1, PLAY , EDIT, MAKE, QUIT }mode;
 
@@ -45,7 +59,7 @@ int main(int argc, char** argv) {
     };
 
     // Opens the list of avaible levels and has an int at the top of how many levels are stored in the file
-    TTF_Font *font = TTF_OpenFont("..\\assets\\ArialNarrow7.ttf", 500);
+    TTF_Font *font = TTF_OpenFont("..\\assets\\ArialNarrow7.ttf", 150);
     FILE *inFile = fopen("..\\levels\\levelSelect.txt", "r");
     if (inFile == NULL) {
         SDL_Log("level file is null\n");
@@ -53,7 +67,7 @@ int main(int argc, char** argv) {
     }
 
     // Reads in the potenial levels and adds them to the selection list 
-    Buttons* selectionHead = NULL;
+    Button* selectionHead = NULL;
     char name[100]; //Buffer of 100 character for file path should never be that long
     while (fscanf(inFile, "%s ", name) != EOF) {
         //SDL_Log("Read in file path: '%s' \n", name);
@@ -61,11 +75,11 @@ int main(int argc, char** argv) {
     }
     fclose(inFile);
     
-    // Buttons for the diffrent levels you can chosse 
+    // Button for the diffrent levels you can chosse 
     char* displayName = malloc(sizeof(char*) * 20);
 
     int whIle = 0;
-    Buttons* current = selectionHead;
+    Button* current = selectionHead;
     while (current != NULL) {
         // Loop through every button and postion the rect in the correct spot
         current->rect->h = 40;
@@ -89,13 +103,13 @@ int main(int argc, char** argv) {
         current->textRect->y = current->rect->y + (current->rect->h / 4);
         current->txr = texTotxr(ren, font, colorIndex[TEXT], displayName);// Give the text txr to each button
         
-        current = (Buttons *) current->next;
+        current = current->next;
     }
     free(displayName);
     
-    // Buttons for Main Menu 
+    // Button for Main Menu 
     // This 1st one is just the background rect I just tossed it in with the 3 buttons
-    Buttons* menuHead = NULL;
+    Button* menuHead = NULL;
     insertNode(&menuHead, "background");
     menuHead->rect->w = screenW;
     menuHead->rect->x = 0;
@@ -108,7 +122,7 @@ int main(int argc, char** argv) {
     insertNode(&menuHead, "edit");
 
     whIle = 0;
-    current = (Buttons *) menuHead->next;
+    current = menuHead->next;
     while (current != NULL){
         current->rect->h = (screenH - menuHead->rect->y) - 30 ;
         current->rect->w = (screenW - 50) / 3;
@@ -116,7 +130,7 @@ int main(int argc, char** argv) {
         current->rect->y = menuHead->rect->y + 15;
         current->txr = texTotxr(ren, font, colorIndex[TEXT], current->name);
         
-        current = (Buttons *) current->next;
+        current = current->next;
     }
     
 
@@ -124,19 +138,23 @@ int main(int argc, char** argv) {
     Map map;
     Avtr avtr;
     SDL_Event e;
+    Button* lvlHead = NULL;
     int mode = MAINMENU;
-    Buttons* lvlHead = NULL;
     Assets assets;
     initTextures(ren, &assets);
     
     do {
         switch (mode) {
             case MAINMENU:
+                // If there are levels already selected de-select them when coming back here
+                deselectAllButtons(selectionHead);
+                deselectAllButtons(lvlHead);
+                
                 while (mode == MAINMENU) {
                     SDL_SetWindowSize(window, DFLT_SCREEN_W, DFLT_SCREEN_H);
                     SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
                     while (SDL_PollEvent(&e)) {
-                        Buttons** node = NULL;// Button that is clicked on
+                        Button* node = NULL;// Button that is clicked on
                         int x, y;// Mouse position
                         switch (e.type) {
                             case SDL_KEYDOWN:
@@ -147,9 +165,9 @@ int main(int argc, char** argv) {
                             case SDL_MOUSEWHEEL:
                                 // Scrool to see more levels
                                 if (e.wheel.y > 0) { // scroll up
-                                    updatePos(&selectionHead, 5);
+                                    updatePos(&selectionHead, 10);
                                 } else if (e.wheel.y < 0) {// scrool down
-                                    updatePos(&selectionHead, -5);
+                                    updatePos(&selectionHead, -10);
                                 }
                                 break;
                             case SDL_MOUSEBUTTONDOWN:
@@ -157,10 +175,10 @@ int main(int argc, char** argv) {
                                 // If mouse click is in the menuHead area check those buttons instead of the level nodes
                                 // First bit is just general area && this bit is making sure specfic area
                                 if (y >= menuHead->rect->y &&
-                                    (node = isInNode((Buttons **) &menuHead->next, x, y)) != NULL) {
-                                    if ((*node)->selected == 0) {// Pick
+                                    (node = isInNode(menuHead->next, x, y)) != NULL) {
+                                    if (node->selected == 0) {// Pick
                                         // Each button does its own thang
-                                        switch (menuButton(*node)) {
+                                        switch (menuButton(node)) {
                                             case 1:// Make
                                                 SDL_Log("Make mode is not made yet\n");
                                                 mode = MAKE;
@@ -189,24 +207,20 @@ int main(int argc, char** argv) {
                                         }
 
                                         // Make sure you only can pick one option at a time
-                                        current = (Buttons *) menuHead->next;
-                                        while (current != NULL) {
-                                            current->selected = 0;
-                                            current = (Buttons *) current->next;
-                                        }
-                                        (*node)->selected = 1;
+                                        deselectAllButtons(menuHead->next);
+                                        node->selected = 1;
 
-                                    } else (*node)->selected = 0; //Un-Select
+                                    } else node->selected = 0; //Un-Select
                                  
                                     // If mouse click is above menuHead area then check the level nodes
                                 } else {
-                                    if ((node = isInNode(&selectionHead, x, y)) != NULL) {
-                                        if ((*node)->selected == 0) { //Pick
-                                            insertNode(&lvlHead, (*node)->name);
-                                            (*node)->selected = 1;
+                                    if ((node = isInNode(selectionHead, x, y)) != NULL) {
+                                        if (node->selected == 0) { //Pick
+                                            insertNode(&lvlHead, node->name);
+                                            node->selected = 1;
                                         } else {                    //Un-Pick
-                                            removeNode(&lvlHead, (*node)->name);
-                                            (*node)->selected = 0;
+                                            removeNode(&lvlHead, node->name);
+                                            node->selected = 0;
                                         }
                                         printList(lvlHead);
                                     }
@@ -219,14 +233,16 @@ int main(int argc, char** argv) {
                                                colorIndex[BACKGROUND].b, colorIndex[BACKGROUND].a);
                         SDL_RenderClear(ren);
                         drawlevels(ren, selectionHead, assets, colorIndex);
-                        drawMode(ren, menuHead,
-                                 colorIndex);  // Draw the menu on top of everything (turns out I only need this once, so it does not need to be a function but eh) 
+                        drawMode(ren, menuHead, colorIndex);  // Draw the menu on top of everything (turns out I only need this once, so it does not need to be a function but eh) 
                         SDL_RenderPresent(ren);       // Redner the screen at the end of each
                     }
                 }
                 break;
             case PLAY:
-                current = (Buttons *) lvlHead;
+                SDL_SetRenderDrawColor(ren, colorIndex[BACKGROUND].r, colorIndex[BACKGROUND].g,
+                                       colorIndex[BACKGROUND].b, colorIndex[BACKGROUND].a);
+                SDL_RenderClear(ren);
+                current = lvlHead;
                 do {//This do-while is the game loading each file until there is no more to laod then exits the game 
                     if (!mapInit(&map, current->name, &screenW, &screenH)) {
                         SDL_Log("%s did not initialize\n", current->name);
@@ -237,7 +253,6 @@ int main(int argc, char** argv) {
                     SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
                     displayMap(ren, &map, &assets);
                     SDL_Log("%s is now displayed\n", current->name);
-
                     int updateDispaly = -1;
                     while (mode == PLAY && gemsRemaining(&map, &avtr) != 0) {// This loop is the level (each indivual map) 
                         while (SDL_PollEvent(&e)) {
@@ -264,6 +279,8 @@ int main(int argc, char** argv) {
                                     case SDLK_q:
                                         mode = QUIT;
                                         break;
+                                    case SDLK_e:
+                                        mode = EDIT;
                                     default:
                                         break;
                                 }
@@ -278,14 +295,15 @@ int main(int argc, char** argv) {
                     SDL_Delay(
                             200);// I thought a slight delay would look better than an "instant" switch to the next map
                     mapUninit(&map);
-                    current = (Buttons *) current->next;
+                    current = current->next;
                 } while (mode == PLAY && current != NULL);
-                if (mode != QUIT) {
+                if (mode != QUIT && mode != EDIT) {
                     mode = MAINMENU;
                 }
                 break;
             case MAKE:
                 //Nothing here 
+                
                 break;
             case EDIT:
                 if (!mapInit(&map, lvlHead->name, &screenW, &screenH)) {
@@ -296,16 +314,22 @@ int main(int argc, char** argv) {
                 SDL_SetWindowSize(window, screenW, screenH);
                 SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
-                Buttons* tileHead = initTileSelection(screenW, assets);
+                Button* tileHead = initTileSelection(screenW, assets);
                 tileName selectedTile = empty;// Starting tile is the empty one
                 SDL_Log("%s is now displayed\n", lvlHead->name);
                 while (mode == EDIT) {
                     int x, y;
-                    Buttons** button;
+                    Button* button;
                     while (SDL_PollEvent(&e)) {
                         switch (e.type) {
                             case SDL_KEYDOWN:
-                                if (e.key.keysym.sym != SDLK_q) break;
+                                if (e.key.keysym.sym == SDLK_q) {
+                                    mode = QUIT;
+                                }
+                                if(e.key.keysym.sym == SDLK_p) {
+                                    mode = PLAY;
+                                }
+                                break;
                             case SDL_QUIT:
                                 mode = QUIT;
                                 break;
@@ -314,23 +338,18 @@ int main(int argc, char** argv) {
                                 SDL_Log("Mouse Position: %d, %d \n", x, y);
 
                                 // Pick the tileType you want to place
-                                if (x > screenW - SIDE_SIZE && (button = isInNode((Buttons**) &tileHead, x, y)) != NULL) {
-                                    if ((*button)->selected == 0) {// Select tile
+                                if (x > screenW - SIDE_SIZE && (button = isInNode(tileHead, x, y)) != NULL) {
+                                    if (button->selected == 0) {// Select tile
                                         // Unselects the currently selected tile 
-                                        current = (Buttons *) tileHead;
-                                        while (current != NULL) {
-                                            current->selected = 0;
-                                            current = (Buttons *) current->next;
-                                        }
-                                        
-                                        (*button)->selected = 1;
-                                        selectedTile = atoi((*button)->name);
+                                        deselectAllButtons(tileHead);
+                                        button->selected = 1;
+                                        selectedTile = atoi(button->name);
                                         
                                         //If Save or Leave do these instead of normal tile selection
                                         if (selectedTile == save) {
                                             if (saveFile(&map, lvlHead->name) == -1) {
                                                 SDL_Log("Writing to file Failed");
-                                                (*button)->selected = 2;
+                                                button->selected = 2;
                                             } else {
                                                 SDL_Log("Writing to file was successful");
                                             }
@@ -339,13 +358,14 @@ int main(int argc, char** argv) {
                                         }
                                         
                                     } else {//Un-Select tile
-                                        (*button)->selected = 0;
+                                        button->selected = 0;
                                         selectedTile = empty;
                                     }
                                     // Pick the tile you want to place it in    
                                 } else if (x < screenW - SIDE_SIZE){
                                     updateTile(x, y, &map, selectedTile);
                                 }
+                                break;
                         }
                         // Update display at the end
                         displayMap(ren, &map, &assets);
@@ -379,9 +399,9 @@ int main(int argc, char** argv) {
  * @param txr the struct of all textures
  * @param colorIndex the array of all colors 
  */
-void drawlevels(SDL_Renderer* ren, Buttons* head, Assets txr, SDL_Color* colorIndex){
+void drawlevels(SDL_Renderer* ren, Button* head, Assets txr, SDL_Color* colorIndex){
     int color;
-    Buttons* current = head;
+    Button* current = head;
     while (current != NULL){
         // Dispaly the textures
         SDL_RenderCopy(ren, txr.button, NULL, current->rect);
@@ -392,7 +412,7 @@ void drawlevels(SDL_Renderer* ren, Buttons* head, Assets txr, SDL_Color* colorIn
         SDL_SetRenderDrawColor(ren, colorIndex[color].r, colorIndex[color].g, colorIndex[color].b, colorIndex[color].a);
         SDL_RenderDrawRect(ren, current->rect);
         
-        current = (Buttons *) current->next;
+        current = current->next;
     }
 }
 
@@ -403,9 +423,9 @@ void drawlevels(SDL_Renderer* ren, Buttons* head, Assets txr, SDL_Color* colorIn
  * @param menuHead the head node of the menu stuff
  * @param colorIndex the array of all colors 
  */
-void drawMode(SDL_Renderer* ren, Buttons* menuHead, SDL_Color* colorIndex){
+void drawMode(SDL_Renderer* ren, Button* menuHead, SDL_Color* colorIndex){
     int i = 0, color;
-    Buttons* current = menuHead;
+    Button* current = menuHead;
     while (current != NULL){
         color = (i == 0) ? ACCENT : BACKGROUND;// if head, fill background box to ACCENT otherwise fill with BACKGROUND
         SDL_SetRenderDrawColor(ren, colorIndex[color].r, colorIndex[color].g, colorIndex[color].b, colorIndex[color].a);
@@ -418,7 +438,7 @@ void drawMode(SDL_Renderer* ren, Buttons* menuHead, SDL_Color* colorIndex){
         SDL_SetRenderDrawColor(ren, colorIndex[color].r, colorIndex[color].g, colorIndex[color].b, colorIndex[color].a);
         SDL_RenderDrawRect(ren, current->rect);
         
-        current = (Buttons *) current->next;
+        current = current->next;
     }
 }
 
@@ -430,7 +450,7 @@ void drawMode(SDL_Renderer* ren, Buttons* menuHead, SDL_Color* colorIndex){
  *          3 for edit
  *         -1 for anything else
  */
-int menuButton(Buttons* node){
+int menuButton(Button* node){
     if (strcmp((const char *) node->name, "make") == 0) {
         SDL_Log("%s \n", node->name);
         return 1;
@@ -445,3 +465,19 @@ int menuButton(Buttons* node){
     }
     return -1;
 }
+
+/**
+ * 
+ * @param head 
+ */
+void deselectAllButtons(Button* head){
+    Button* current = head;
+    while (current != NULL) {
+        current->selected = 0;
+        current = current->next;
+    }
+}
+
+
+
+
