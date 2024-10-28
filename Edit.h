@@ -10,6 +10,6 @@
 Button* initTileSelection(int screenW, Assets txr);
 void displayTileSelection(SDL_Renderer*, Button* head, SDL_Color*);
 void updateTile(int x, int y, Map* map, tileName selected);
-int saveFile(Map* map, const char* filename);
+int saveFile(Map* map, std::string filename);
 
 #endif //YESDL_EDIT_H

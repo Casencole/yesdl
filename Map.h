@@ -1,15 +1,20 @@
 //
 // Created by casen on 2/10/2024.
 //
-#include <stdbool.h>
-#include "SDL2/SDL.h"
+#include "string"
+#include "SDL.h"
 #include "Avatar.h"
 #include "Texture.h"
+
+#ifndef SIZE
+#define SIZE 30
+#endif
+
 
 #ifndef YESDL_MAP_H
 #define YESDL_MAP_H
 
-const int SIZE;
+
 
 
 typedef enum {
@@ -44,7 +49,7 @@ typedef struct{
     SDL_Rect side; 
 } Map;
 
-bool mapInit(Map* map, const char* filename, int* screenW, int* screnH);
+bool mapInit(Map* map, std::string filename, int* screenW, int* screenH);
 void mapUninit(Map* map);
 void displayMap(SDL_Renderer* ren, Map* map, Assets* assets);
 int moveAvtr(Map* map, Avtr* avtr, char axis, int spaces);

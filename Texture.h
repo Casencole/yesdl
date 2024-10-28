@@ -1,10 +1,10 @@
 //
 // Created by casen on 2/15/2024.
 //
-#include <stdio.h>
-#include "SDL2/SDL.h"
+#include "string"
+#include "SDL.h"
 #include "SDL_image.h"
-#include "SDL2/SDL_ttf.h"
+#include "SDL_ttf.h"
 #ifndef YESDL_TEXTURE_H
 #define YESDL_TEXTURE_H
 
@@ -24,8 +24,8 @@ typedef struct {
 
 void initTextures(SDL_Renderer*, Assets*);
 SDL_Texture* loadTexture(SDL_Renderer*, const char* file);
-void destoryTexture(Assets*);
-SDL_Texture* texTotxr(SDL_Renderer*, TTF_Font*, SDL_Color, char*);
+void destroyTexture(Assets* txr);
+SDL_Texture* texTotxr(SDL_Renderer*, TTF_Font*, SDL_Color, const std::string&);
 
 
 #endif //YESDL_TEXTURE_H
