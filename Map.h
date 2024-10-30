@@ -2,7 +2,7 @@
 // Created by casen on 2/10/2024.
 //
 #include "string"
-#include "SDL.h"
+#include "MySDL.h"
 #include "Avatar.h"
 #include "Texture.h"
 

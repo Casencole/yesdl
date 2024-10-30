@@ -2,6 +2,7 @@
 // Created by casen on 3/1/2024.
 //
 #include "Edit.h"
+#include <string>
 
 /**
  * Just loads all the starting stuff for the Tile Selection
@@ -10,14 +11,13 @@
  */
 Button* initTileSelection(int screenW, Assets txr){
     // Make a button for each type of tile and invalid_tile will always be the last in the enum of tileName
-    char *keyName = nullptr;
+    std::string keyName;
     Button* tileHead = nullptr;
     for (int i = 0; i < invalid_tile; i++){
-        sprintf(keyName, "%d", i);
+        keyName = std::to_string(i);
         insertNode(&tileHead, keyName);
     }
-  
-    sprintf(keyName, "%d", open_door);
+    keyName = std::to_string(open_door);
     removeNode(&tileHead, keyName);
 
     // Set the position of where each button to the correct location
@@ -29,7 +29,7 @@ Button* initTileSelection(int screenW, Assets txr){
         current->rect->x = screenW - SIDE_SIZE + (SIDE_SIZE / 4);
         current->rect->y = 20 + (whIle * (current->rect->h + 10));
         
-        switch (atoi(current->name.c_str())) {
+        switch (stoi(current->name)) {
             case empty:
                 current->txr = txr.empty;
                 break;
@@ -78,18 +78,19 @@ Button* initTileSelection(int screenW, Assets txr){
  * @param head head of teh tile selection list
  * @param txr struct of all textures
  */
-void displayTileSelection(SDL_Renderer* ren, Button* head, SDL_Color* colorIndex){
+void displayTileSelection(MySDL* screen, Button* head){
     int color;
     Button* current = head;
     while (current != nullptr){
-        SDL_RenderCopy(ren, current->txr, nullptr, current->rect);
+        SDL_RenderCopy(screen->ren, current->txr, nullptr, current->rect);
         if (current->name == "8"){// 8 is the save button, this is a crap way to do this, I'll fix it later
             color = (current->selected == 1) ? SUCCESS : FAIL;
         } else {
             color = (current->selected == 0) ? BACKGROUND : TEXT;
         }
-        SDL_SetRenderDrawColor(ren, colorIndex[color].r, colorIndex[color].g, colorIndex[color].b, colorIndex[color].a);
-        SDL_RenderDrawRect(ren, current->rect);
+        //SDL_SetRenderDrawColor(ren, colorIndex[color].r, colorIndex[color].g, colorIndex[color].b, colorIndex[color].a);
+        screen->setDrawColor(color);
+        SDL_RenderDrawRect(screen->ren, current->rect);
         current = current->next;
     }
 }

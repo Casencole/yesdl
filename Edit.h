@@ -8,7 +8,7 @@
 #define YESDL_EDIT_H
 
 Button* initTileSelection(int screenW, Assets txr);
-void displayTileSelection(SDL_Renderer*, Button* head, SDL_Color*);
+void displayTileSelection(MySDL*, Button* head);
 void updateTile(int x, int y, Map* map, tileName selected);
 int saveFile(Map* map, std::string filename);
 

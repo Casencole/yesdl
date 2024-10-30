@@ -1,7 +1,7 @@
 //
 // Created by casen on 2/20/2024.
 //
-#include "SDL.h"
+#include "MySDL.h"
 #include <string.h>
 #include <string>
 #ifndef YESDL_SLL_H
@@ -19,9 +19,11 @@ typedef struct Node{
 } Button ;
 //int data is just a place-holder type that needs to change to be something more unique
 Button* createNode(std::string);             //Helper function to insert
-void insertNode(Button** head, const std::string&); //Adds the node at the end of the linked list
-void removeNode(Button** head, const std::string&);
+void insertNode(Button** head, std::string); //Adds the node at the end of the linked list
+void removeNode(Button** head, std::string);
 void destroyList(Button** head);
+void clearList(Button** head);
+void deselectAllButtons(Button* head);
 void printList(Button*); //This one is purely for dev purposes at least the way I am using it when I make it
 Button* isInNode(Button* head, int x, int y);
 int updatePos(Button** head, int change);

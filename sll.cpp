@@ -29,7 +29,7 @@ Button* createNode(std::string name){
  * @param head The head node of a linked list
  * @param name String that will be stored in the node
  */
-void insertNode(Button** head, const std::string& name){
+void insertNode(Button** head, std::string name){
     Button* newNode = createNode(name);
     if (*head == nullptr) {
         *head = newNode;
@@ -48,24 +48,24 @@ void insertNode(Button** head, const std::string& name){
  * @param key right now the key is just a string is compared to the name
  *              (only works if each node has a unique name which in this application it should)
  */
-void removeNode(Button** head, const std::string& key){
+void removeNode(Button** head, std::string key){
     Button* current = *head;
     Button* prev = nullptr;
-    
+
     if (current != nullptr && current->name == key){
         *head = current->next;
         delete(current);
         return;
     }
-    
-    while (current != nullptr && current->name == key){
+
+    while (current != nullptr && current->name != key){
         prev = current;
         current = current->next;
     }
-    
+
     if (current == nullptr) return;
     prev->next = current->next;
-    free(current);
+    delete(current);
 }
 
 /**
@@ -81,9 +81,34 @@ void destroyList(Button** head){
         current = current->next;
         free(prev->textRect);
         free(prev->rect);
-        free(prev);
+        delete(prev);
     }
 }
+
+/**
+ * Empties a list
+ * @param head The head of a linked list
+ */
+void clearList(Button** head){
+    Button* current = *head;
+    while (current != nullptr) {
+        removeNode(head, current->name);
+        current = current->next;
+    }
+}
+
+/**
+ * Deselects all buttons in a list
+ * @param head The head of a linked list
+ */
+void deselectAllButtons(Button* head){
+    Button* current = head;
+    while (current != nullptr) {
+        current->selected = 0;
+        current = current->next;
+    }
+}
+
 
 /**
  * Prints the whole list from the node given onward (does not technically need to be a head)

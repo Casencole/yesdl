@@ -1,7 +1,7 @@
 //
 // Created by casen on 2/12/2024.
 //
-#include "SDL.h"
+#include "MySDL.h"
 #include "SDL_image.h"
 #include "Texture.h"
 #ifndef YESDL_AVATAR_H
