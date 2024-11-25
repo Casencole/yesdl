@@ -1,6 +1,7 @@
 I made a dungeon-style terminal game in class, and it gave me inspiration to remake the game a few
 months later, but I wanted to try to do it a more graphical way, so I did (it's *functional* but not
-pretty)
+pretty). Originally made in c and after some consideration i switched to c++ to allow more object 
+oriented design.
 
 Dear future me when you inevitably have SDL broken again use this (once I finish making tactfully
 instruction)
